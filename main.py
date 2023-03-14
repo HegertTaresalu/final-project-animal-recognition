@@ -1,20 +1,8 @@
-from pyimagesearch.tempimage import TempImage
-from picamera.array import PiRGBArray
-from picamera import PiCamera
-import tensorflow as tf
-import cv2
-import os
-from keras import layers
-from keras.utils import to_categorical
-
-
-
-camera = PiCamera()
-camera.resolution = (1024, 768)
-
-
-
-
+"""
+Loads model and tries to guess who is in the picture
+image size can and should be resized based on the model loaded
+The project requires Picamera, you can't replace it with usb camera
+"""
 
 
 def identifyImage():
@@ -28,3 +16,27 @@ def identifyImage():
     for i in range(len(class_names)):
         print(class_names[i] ," : ", round(numbers[i].astype(float)* 100, 2) , "%")
             
+
+def main():
+    from pyimagesearch.tempimage import TempImage
+    from picamera.array import PiRGBArray
+    from picamera import PiCamera
+    import tensorflow as tf
+    import cv2
+    import os
+    from keras import layers
+    from keras.utils import to_categorical
+
+
+    #Setup camera	
+    camera = PiCamera()
+    camera.resolution = (640, 480)
+    raw_image = PiRGBArray
+
+
+if _name__ == "__main__":
+    
+    #ToDo compare image values using openCV and greyscale
+    main()
+    
+    
