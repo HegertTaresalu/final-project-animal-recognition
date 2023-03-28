@@ -19,22 +19,21 @@ def identifyImage():
 def main():
     from picamera.array import PiRGBArray
     from picamera import PiCamera
-    #import tensorflow as tf
+    import time
+    import tensorflow as tf
     import cv2
     import os
-    import numpy as np
-    #from keras import layers
-    #from keras.utils import to_categorical
+    import numpy as np#
+    from keras import layers 
 
 
-    #Setup camera	
     camera = PiCamera()
     camera.resolution = (640, 480)
     camera.framerate = 24
-    raw_image = PiRGBArray(camera, size(640,480))
+    raw_image = PiRGBArray(camera, size=(640,480))
     time.sleep(0.1)
     first_frame = None
-    for frame in camera.capture_continuous(raw_capture, format="bgr", use_video_port=True):
+    for frame in camera.capture_continuous(raw_image, format="bgr", use_video_port=True):
         kernel = np.ones((20,20),np.uint8)
         img = frame.array
         gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
@@ -44,7 +43,7 @@ def main():
         gray = cv2.medianBlur(gray,5)
         if first_frame is None:
             first_frame = gray
-            raw_image.truncuate(0)
+            raw_image.truncate(0)
             continue
             
         absolute_difference = cv2.absdiff(first_frame,gray)
@@ -55,7 +54,7 @@ def main():
         areas = [cv2.contourArea(c) for c in contours]
         if len(areas) < 1:
             print("no movement detected")
-            cv2.imshow('Frame',image)
+            cv2.imshow('Frame',img)
             key = cv2.waitKey(1) & 0xFF
             raw_image.truncate(0)
 
@@ -69,22 +68,22 @@ def main():
             # Draw the bounding box
         cnt = contours[max_index]
         x,y,w,h = cv2.boundingRect(cnt)
-        cv2.rectangle(image,(x,y),(x+w,y+h),(0,255,0),3)
+        cv2.rectangle(img,(x,y),(x+w,y+h),(0,255,0),3)
         # Draw circle in the center of the bounding box
         x2 = x + int(w/2)
         y2 = y + int(h/2)
-        cv2.circle(image,(x2,y2),4,(0,255,0),-1)
+        cv2.circle(img,(x2,y2),4,(0,255,0),-1)
         # Print the centroid coordinates (we'll use the center of the
         # bounding box) on the image
         text = "x: " + str(x2) + ", y: " + str(y2)
-        cv2.putText(image, text, (x2 - 10, y2 - 10),
+        cv2.putText(img, text, (x2 - 10, y2 - 10),
         cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)
         # Display the resulting frame
-        cv2.imshow("Frame",image)
+        cv2.imshow("Frame",img)
         # Wait for keyPress for 1 millisecond
         key = cv2.waitKey(1) & 0xFF
         # Clear the stream in preparation for the next frame
-        raw_capture.truncate(0)
+        raw_image.truncate(0)
         print("movement detected")
         # If "q" is pressed on the keyboard, 
         # exit this loop
