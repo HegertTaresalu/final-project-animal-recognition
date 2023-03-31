@@ -1,35 +1,33 @@
-"""
-Loads model and tries to guess who is in the picture
-image size can and should be resized based on the model loaded
-The project requires Picamera, you can't replace it with usb camera
-"""
-"""
+import cv2
+import numpy as np
+from picamera.array import PiRGBArray
+from picamera import PiCamera
+import time
+import tensorflow as tf
+  
+import tensorflow.keras as keras
+
+
 def identifyImage():
-    model = keras.models.load_model("model_name")
+    model = keras.models.load_model("96%90%")
     image_size = (180,180)
-    class_names = ["deer", "fox", "rabbit", "wild_boar"]
-    img = keras.preprocessing.image.load_img(
-    f, target_size=image_size)
+    class_names = ["deer","fox", "rabbit", "wild_boar"]
+    img = keras.preprocessing.image.load_img("test.jpeg", target_size=image_size)
     predictions = model.predict(img_array)
     numbers = predictions[0]
     for i in range(len(class_names)):
-        print(class_names[i] ," : ", round(numbers[i].astype(float)* 100, 2) , "%")
-            
-"""
-def main():
-    from picamera.array import PiRGBArray
-    from picamera import PiCamera
-    import time
-    import tensorflow as tf
-    import cv2
-    import os
-    import numpy as np#
-    from keras import layers 
+        print(class_names[i], " : " , round(numbers[i].astype(float)* 100, 2),"%")
 
 
-    camera = PiCamera()
-    camera.resolution = (640, 480)
-    camera.framerate = 24
+
+def main(use_usb_camera=False):
+    if use_usb_camera:
+        camera = cv2.VideoCapture(0)
+    else:
+        identifyImage()
+        camera = PiCamera()
+        camera.resolution = (640, 480)
+        camera.framerate = 24
     raw_image = PiRGBArray(camera, size=(640,480))
     time.sleep(0.1)
     first_frame = None
@@ -84,14 +82,19 @@ def main():
         key = cv2.waitKey(1) & 0xFF
         # Clear the stream in preparation for the next frame
         raw_image.truncate(0)
+
         print("movement detected")
+        camera.capture("test.jpeg")
+        identifyImage() 
         # If "q" is pressed on the keyboard, 
         # exit this loop
         if key == ord("q"):
             break
+    if use_usb_camera:
+        camera.release()
+    else:
+        camera.close()
+
+
 if __name__ == "__main__":
-    
-    #ToDo compare image values using openCV and greyscale
     main()
-    
-    
