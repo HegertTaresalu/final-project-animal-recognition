@@ -28,7 +28,7 @@ def identifyAnimal(frame, x, y, w, h):
 
 
 def main():
-        camera = cv2.VideoCapture(0)    
+    camera = cv2.VideoCapture(0)    
     time.sleep(0.1)
     fgbg = cv2.createBackgroundSubtractorMOG2()
     while True:
