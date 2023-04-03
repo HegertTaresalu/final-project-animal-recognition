@@ -3,11 +3,7 @@ import numpy as np
 import time
 import tensorflow as tf
 import tensorflow.keras as keras
-import cv2
-import numpy as np
-import time
-import tensorflow as tf
-import tensorflow.keras as keras
+
 
 model = keras.models.load_model("96%90%")
 
