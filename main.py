@@ -28,15 +28,8 @@ def identifyAnimal(frame, x, y, w, h):
 
 
 
-def main(use_usb_camera=True):
-    if use_usb_camera:
-        camera = cv2.VideoCapture(0)
-    else:
-        from picamera.array import PiRGBArray
-        from picamera import PiCamera
-        camera = PiCamera()
-        camera.resolution = (640, 480)
-        camera.framerate = 24
+def main():
+    camera = cv2.VideoCapture(0)
     time.sleep(0.1)
     first_frame = None
     while True:
