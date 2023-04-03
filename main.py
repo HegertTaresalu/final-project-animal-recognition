@@ -44,7 +44,6 @@ def main(use_usb_camera=True):
         if not ret:
             print("Failed to read frame")
             break
-        frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
         kernel = np.ones((20,20),np.uint8)
         gray = cv2.cvtColor(frame, cv2.COLOR_RGB2GRAY)
         # Close gaps using closing
