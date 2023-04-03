@@ -27,31 +27,24 @@ def identifyAnimal(frame, x, y, w, h):
     return frame
 
 
-
 def main():
-    camera = cv2.VideoCapture(0)
+        camera = cv2.VideoCapture(0)    
     time.sleep(0.1)
-    first_frame = None
+    fgbg = cv2.createBackgroundSubtractorMOG2()
     while True:
         ret, frame = camera.read()
         if not ret:
             print("Failed to read frame")
             break
+        fgmask = fgbg.apply(frame)
         kernel = np.ones((20,20),np.uint8)
-        gray = cv2.cvtColor(frame, cv2.COLOR_RGB2GRAY)
+        gray = cv2.cvtColor(fgmask, cv2.COLOR_RGB2GRAY)
         # Close gaps using closing
         gray = cv2.morphologyEx(gray,cv2.MORPH_CLOSE,kernel)
         # Remove salt and pepper noise with a median filter
         gray = cv2.medianBlur(gray,5)
-        if first_frame is None:
-            first_frame = gray
-            continue
 
-        absolute_difference = cv2.absdiff(first_frame,gray)
-
-        _, absolute_difference = cv2.threshold(absolute_difference, 100, 255, cv2.THRESH_BINARY)
-
-        contours, hierarchy = cv2.findContours(absolute_difference,cv2.RETR_TREE,cv2.CHAIN_APPROX_SIMPLE)[-2:]
+        contours, hierarchy = cv2.findContours(gray,cv2.RETR_TREE,cv2.CHAIN_APPROX_SIMPLE)[-2:]
         areas = [cv2.contourArea(c) for c in contours]
         if len(areas) < 1:
             print("no movement detected")
@@ -65,6 +58,7 @@ def main():
         else:
             # Find the largest moving object in the image
             max_index = np.argmax(areas)
+          
             # Draw the bounding box
             cnt = contours[max_index]
             x,y,w,h = cv2.boundingRect(cnt)
@@ -90,10 +84,7 @@ def main():
             # exit this loop
             if key == ord("q"):
                 break
-    if use_usb_camera:
-        camera.release()
-    else:
-        camera.close()
+		camera.release()
 
 
 if __name__ == "__main__":
