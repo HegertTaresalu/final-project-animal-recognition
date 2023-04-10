@@ -28,10 +28,10 @@ def identifyAnimal(frame, x, y, w, h):
     return frame
 
 def main():
-        camera = cv2.VideoCapture(0)   
-		#Resolution change
-		camera.set(3,640)
-		camera.set(4,480)
+    camera = cv2.VideoCapture(0)   
+	#Resolution change
+	camera.set(3,640)
+	camera.set(4,480)
     time.sleep(0.1)
     fgbg = cv2.createBackgroundSubtractorMOG2()
     while True:
