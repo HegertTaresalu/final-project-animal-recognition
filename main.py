@@ -1,6 +1,7 @@
 import cv2
 import numpy as np
 import time
+
 import tensorflow as tf
 import tensorflow.keras as keras
 
@@ -26,9 +27,11 @@ def identifyAnimal(frame, x, y, w, h):
     cv2.putText(frame, text, (x, y-10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)
     return frame
 
-
 def main():
-        camera = cv2.VideoCapture(0)    
+        camera = cv2.VideoCapture(0)   
+		#Resolution change
+		camera.set(3,640)
+		camera.set(4,480)
     time.sleep(0.1)
     fgbg = cv2.createBackgroundSubtractorMOG2()
     while True:
@@ -36,9 +39,16 @@ def main():
         if not ret:
             print("Failed to read frame")
             break
+			
+		kernel_size = 15
+        kernel = np.ones((kernel_size, kernel_size), np.float32) / (kernel_size ** 2)
+        blurred_frame = cv2.filter2D(frame, -1, kernel)
+        frame = cv2.deconvolve(blurred_frame, kernel)[0]	
+			
+			
         fgmask = fgbg.apply(frame)
         kernel = np.ones((20,20),np.uint8)
-        gray = cv2.cvtColor(fgmask, cv2.COLOR_RGB2GRAY)
+        gray = fgmask
         # Close gaps using closing
         gray = cv2.morphologyEx(gray,cv2.MORPH_CLOSE,kernel)
         # Remove salt and pepper noise with a median filter
