@@ -90,10 +90,8 @@ def main():
             # exit this loop
             if key == ord("q"):
                 break
-    if use_usb_camera:
         camera.release()
-    else:
-        camera.close()
+    
 
 
 if __name__ == "__main__":
