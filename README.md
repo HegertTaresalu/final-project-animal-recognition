@@ -13,8 +13,7 @@ The project's goal is to detect motion and try to identify what animal tripped t
 
 
 # Setup
-    The project should work with every OS on the market. 
-    Installation is different depending on the host OS
+   The project works on System that support OpenCV and Tensorflow 2.12
 
 
 ## Mac, Linux distros(except Raspberry pi based), Windows 10 & 11:
@@ -27,9 +26,9 @@ The project's goal is to detect motion and try to identify what animal tripped t
 
 ## Raspberry pi
 
-    1.      sudo apt install python3
-    2.      follow the link **Insert tensorflow or tensorflow lite binary link
-    3.      pip install opencv-python
+    1.sudo apt install python3
+    2.follow the link **Insert tensorflow or tensorflow lite binary link
+    3.pip install opencv-python
 
 The other dependencies that are required should be installed automatically by tensorflow and opencv
 
