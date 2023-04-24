@@ -37,7 +37,6 @@ def save_image_with_timestamp(frame, class_name):
 
 
 def identifyAnimal(frame, x, y, w, h):
-<<<<<<< HEAD
     # crop the image to the bounding box of the moving object
     cropped_img = frame[y:y+h, x:x+w]
     img_array = cv2.resize(cropped_img, image_size)
