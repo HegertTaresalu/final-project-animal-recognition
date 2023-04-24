@@ -13,7 +13,9 @@ The project's goal is to detect motion and try to identify what animal tripped t
 
 
 # Setup
-    The project should work with every OS on the market, but the installation is different depending on the host OS
+    The project should work with every OS on the market. 
+    Installation is different depending on the host OS
+
 
 ## Mac, Linux distros(except Raspberry pi based), Windows 10 & 11:
     1.      Follow the python install guide: https://www.python.org/
@@ -47,9 +49,8 @@ The default parameters might works for some but its highly recommended that you 
 
 
 # Executing the project
-
 You can execute the program by following terminal commands
-        python3 main.py
+    python3 main.py
 
 
 
