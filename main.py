@@ -17,7 +17,7 @@ interpreter.allocate_tensors()
 input_details = interpreter.get_input_details()
 output_details = interpreter.get_output_details()
 image_size = (180, 180)
-class_names = ["deer","fox", "rabbit", "wild_boar"]
+class_names = np.array(["deer", "fox", "rabbit", "wild_boar"])
 
 last_picture_time = time.time()
 picture_interval = 3.0
@@ -35,11 +35,10 @@ def save_image_with_timestamp(frame, class_name):
     cv2.imwrite(file_name, frame)
 
 
-
-def identifyAnimal(frame, x, y, w, h):
-<<<<<<< HEAD
+def identifyAnimal(frame, x, y, w, h): 
     # crop the image to the bounding box of the moving object
     cropped_img = frame[y:y+h, x:x+w]
+    # resize the cropped image to the desired size
     img_array = cv2.resize(cropped_img, image_size)
     img_array = np.expand_dims(img_array, 0)
     # get predictions from the quantized TFLite model
@@ -53,10 +52,11 @@ def identifyAnimal(frame, x, y, w, h):
     # write the predicted class name and probability on the contour box
     text = class_name + ": " + str(probability) + "%"
     cv2.putText(frame, text, (x, y-10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)
-    if time.time() - last_picture_time > picture_interval and pictures_taken < picture_limit:
+    if time.time() - last_picture_time > picture_interval:
         save_image_with_timestamp(frame, class_name)
         last_picture_time = time.time()
     return frame
+
 
 def main():
     camera = cv2.VideoCapture(0)
@@ -76,22 +76,21 @@ def main():
         gray = cv2.medianBlur(gray,5)
 
       # Get the contours and their areas
-        contours, hierarchy = cv2.findContours(gray,cv2.RETR_TREE,cv2.CHAIN_APPROX_SIMPLE)[-2:]
+        contours, hierarchy = cv2.findContours(gray,cv2.RETR_EXTERNAL,cv2.CHAIN_APPROX_SIMPLE)       
         if not contours:
             print("no movement detected")
             continue
-            max_contour = cv2.findContours(cv2.RETR_EXTERNAL)
-            max_area = cv2.contourArea(max_contour)
-            x,y,w,h = cv2.boundingRect(max_contour)
-            frame = identifyAnimal(frame, x, y, w, h)
-            cv2.rectangle(frame,(x,y),(x+w,y+h),(0,255,0),3)
-            x2 = x + int(w/2)
-            y2 = y + int(h/2)
-            cv2.circle(frame,(x2,y2),4,(0,255,0),-1)
-            text = "x: " + str(x2) + ", y: " + str(y2)
-            cv2.putText(frame, text, (x2 - 10, y2 - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)
-            cv2.imshow("Frame",frame)
-            print("movement detected")
+        max_contour = cv2.findContours(cv2.RETR_EXTERNAL)
+        x,y,w,h = cv2.boundingRect(max_contour)
+        frame = identifyAnimal(frame, x, y, w, h)
+        cv2.rectangle(frame,(x,y),(x+w,y+h),(0,255,0),3)
+        x2 = x + int(w/2)
+        y2 = y + int(h/2)
+        cv2.circle(frame,(x2,y2),4,(0,255,0),-1)
+        text = "x: " + str(x2) + ", y: " + str(y2)
+        cv2.putText(frame, text, (x2 - 10, y2 - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)
+        cv2.imshow("Frame",frame)
+        print("movement detected")
           
     camera.release()
 

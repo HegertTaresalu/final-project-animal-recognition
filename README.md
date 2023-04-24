@@ -6,7 +6,7 @@ The project's goal is to detect motion and try to identify what animal tripped t
 
 ## Requirments
 * USB camera, Raspberry pi camera module or phone with droidcam(dev47apps.com) installed
-* Python 3.7+
+* Python 3.8+
 * Tensorflow 2.11(older and newer versions might work but aren't tested)
 * OpenCV2
 * Numpy
@@ -26,7 +26,7 @@ The project's goal is to detect motion and try to identify what animal tripped t
 
 ## Raspberry pi
     1. sudo apt install python3
-    2. follow the link **Insert tensorflow or tensorflow lite binary link
+    2. follow the link https://github.com/PINTO0309/Tensorflow-bin and install using the provided guide
     3. pip install opencv-python
 
 The other dependencies that are required should be installed automatically by tensorflow and opencv
