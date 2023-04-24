@@ -3,32 +3,62 @@ import numpy as np
 import time
 import tensorflow as tf
 import tensorflow.keras as keras
-
-
+import os
 model = keras.models.load_model("96%90%")
 
+# Convert the model to a quantization-aware model
+converter = tf.lite.TFLiteConverter.from_keras_model(model)
+converter.optimizations = [tf.lite.Optimize.DEFAULT]
+quantized_model = converter.convert()
+
+# Load the quantized model
+interpreter = tf.lite.Interpreter(model_content=quantized_model)
+interpreter.allocate_tensors()
+input_details = interpreter.get_input_details()
+output_details = interpreter.get_output_details()
+image_size = (180, 180)
+class_names = ["deer","fox", "rabbit", "wild_boar"]
+
+last_picture_time = time.time()
+picture_interval = 3.0
+
+
+for class_name in class_names:
+    os.makedirs(class_name, exist_ok=True)
+
+def save_image_with_timestamp(frame, class_name):
+    # Get the current timestamp
+    timestamp = int(time.time())
+    # Construct the file name
+    file_name = f"{class_name}/{class_name}_{timestamp}.jpeg"
+    # Save the frame as a JPEG image
+    cv2.imwrite(file_name, frame)
+
+
+
 def identifyAnimal(frame, x, y, w, h):
-    image_size = (180, 180)
-    class_names = ["deer","fox", "rabbit", "wild_boar"]
     # crop the image to the bounding box of the moving object
     cropped_img = frame[y:y+h, x:x+w]
-    img_array = keras.preprocessing.image.img_to_array(cropped_img)
-    img_array = tf.expand_dims(img_array, 0)
-    img_array = tf.image.resize(img_array, size=image_size)
-    # get predictions from the model
-    predictions = model.predict(img_array)
+    img_array = cv2.resize(cropped_img, image_size)
+    img_array = np.expand_dims(img_array, 0)
+    # get predictions from the quantized TFLite model
+    interpreter.set_tensor(input_details[0]['index'], img_array)
+    interpreter.invoke()
+    predictions = interpreter.get_tensor(output_details[0]['index'])
     # get the predicted class name and probability
     class_index = np.argmax(predictions[0])
     class_name = class_names[class_index]
-    probability = round(predictions[0][class_index].astype(float) * 100, 2)
+    probability = np.round(predictions[0][class_index].astype(np.float) * 100, 2)
     # write the predicted class name and probability on the contour box
     text = class_name + ": " + str(probability) + "%"
     cv2.putText(frame, text, (x, y-10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)
+    if time.time() - last_picture_time > picture_interval and pictures_taken < picture_limit:
+        save_image_with_timestamp(frame, class_name)
+        last_picture_time = time.time()
     return frame
 
-
 def main():
-    camera = cv2.VideoCapture(0)    
+    camera = cv2.VideoCapture(0)
     time.sleep(0.1)
     fgbg = cv2.createBackgroundSubtractorMOG2()
     while True:
@@ -38,53 +68,31 @@ def main():
             break
         fgmask = fgbg.apply(frame)
         kernel = np.ones((20,20),np.uint8)
-        gray = cv2.cvtColor(fgmask, cv2.COLOR_RGB2GRAY)
+        gray = fgmask
         # Close gaps using closing
         gray = cv2.morphologyEx(gray,cv2.MORPH_CLOSE,kernel)
         # Remove salt and pepper noise with a median filter
         gray = cv2.medianBlur(gray,5)
 
+      # Get the contours and their areas
         contours, hierarchy = cv2.findContours(gray,cv2.RETR_TREE,cv2.CHAIN_APPROX_SIMPLE)[-2:]
-        areas = [cv2.contourArea(c) for c in contours]
-        if len(areas) < 1:
+        if not contours:
             print("no movement detected")
-            cv2.imshow('Frame',frame)
-            key = cv2.waitKey(1) & 0xFF
-
-            if key == ord("q"):
-                break
-            # Go to the top of the for loop
             continue
-        else:
-            # Find the largest moving object in the image
-            max_index = np.argmax(areas)
-          
-            # Draw the bounding box
-            cnt = contours[max_index]
-            x,y,w,h = cv2.boundingRect(cnt)
+            max_contour = cv2.findContours(cv2.RETR_EXTERNAL)
+            max_area = cv2.contourArea(max_contour)
+            x,y,w,h = cv2.boundingRect(max_contour)
             frame = identifyAnimal(frame, x, y, w, h)
             cv2.rectangle(frame,(x,y),(x+w,y+h),(0,255,0),3)
-            # Draw circle in the center of the bounding box
             x2 = x + int(w/2)
             y2 = y + int(h/2)
             cv2.circle(frame,(x2,y2),4,(0,255,0),-1)
-            # Print the centroid coordinates (we'll use the center of the
-            # bounding box) on the image
             text = "x: " + str(x2) + ", y: " + str(y2)
-            cv2.putText(frame, text, (x2 - 10, y2 - 10),
-            cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)
-            # Display the resulting frame
+            cv2.putText(frame, text, (x2 - 10, y2 - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)
             cv2.imshow("Frame",frame)
-            # Wait for keyPress for 1 millisecond
-            key = cv2.waitKey(1) & 0xFF
-
             print("movement detected")
-            cv2.imwrite("test.jpeg", frame)
-            # If "q" is pressed on the keyboard,
-            # exit this loop
-            if key == ord("q"):
-                break
-		camera.release()
+          
+    camera.release()
 
 
 if __name__ == "__main__":
