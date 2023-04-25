@@ -10,6 +10,7 @@ The project's goal is to detect motion and try to identify what animal tripped t
 * Tensorflow 2.11(older and newer versions might work but aren't tested)
 * OpenCV2
 * Numpy
+* 64 bit OS
 
 
 # Setup
