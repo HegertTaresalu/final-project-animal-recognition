@@ -43,7 +43,13 @@ The default parameters might works for some but its highly recommended that you 
 
 
 
-
+ # Troubleshooting
+ 
+ If you get error that contains something along: 
+ ``` 
+    error endvector missing 1 required positional
+``` 
+Error is caused by Tensorflow and Flatbuffers mismatch
 
 # Executing the project
 
