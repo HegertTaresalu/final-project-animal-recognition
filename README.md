@@ -6,10 +6,9 @@ The project's goal is to detect motion and try to identify what animal tripped t
 
 ## Requirments
 * USB camera, Raspberry pi camera module or phone with droidcam(dev47apps.com) installed
-* Python 3.7+
+* Python 3.8+
 * Tensorflow 2.11(older and newer versions might work but aren't tested)
 * OpenCV2
-* Numpy
 * 64 bit OS
 
 
@@ -18,7 +17,7 @@ The project's goal is to detect motion and try to identify what animal tripped t
 
 ## Mac, Linux distros(except Raspberry pi based), Windows 10 & 11:
     1.      Follow the python install guide: https://www.python.org/
-    2.      pip install tensorflow==2.11.*
+    2.      pip install tensorflow==2.12.*
     3.      pip install opencv-python
 
 
@@ -37,7 +36,6 @@ The other dependencies that are required should be installed automatically by te
 
 The project uses Deep Learning model trained by me to identify animals that are detected by motion detection algorithm.
 The model is made for image classification and not for object detection.
-Also i provided pretrained image classification model incase mine is not suitable for the required job.
 
 The project has multiple files with different algorithms. 
 (Almost) Every algorithm has parameters that can be tuned to user's specific needs. 
