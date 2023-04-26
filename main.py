@@ -46,7 +46,7 @@ def save_image_with_timestamp(frame, class_name):
     cv2.imwrite(file_name, frame)
 
 
-def identify_Animal(frame, x, y, w, h, picture_interval):
+def identify_Animal(frame, x, y, w, h):
     """Identify animal in cropped image"""
     cropped_img = frame[y:y+h, x:x+w]
     cropped_img = cv2.resize(cropped_img,image_size)
@@ -96,7 +96,7 @@ def main(show_frames=True, interval = 3.0):
             continue
         max_contour = max(contours, key=cv2.contourArea)
         x,y,w,h = cv2.boundingRect(max_contour)
-
+        print("movement detected")
         frame = identify_Animal(frame, x, y, w, h, picture_interval)
         cv2.rectangle(frame,(x,y),(x+w,y+h),(0,255,0),3)
         x2 = x + int(w/2)
