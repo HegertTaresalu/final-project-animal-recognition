@@ -47,15 +47,34 @@ The default parameters might works for some but its highly recommended that you 
 
 
 # Executing the project
-You can execute the program by following terminal commands
+You can execute the program by following terminal command
 
-    python3 main.py
-
-
+    python3 main.py [--hide-frames][--interval]
 
 
 
-# Troubleshooting
+
+
+
+ # Troubleshooting
+ 
+ ## Error quantizing model
+
+ If you get error that contains something along: 
+``` 
+error endvector missing 1 required positional
+``` 
+Error is caused by Tensorflow and Flatbuffers mismatch 
+Try to update the packages by pip, if its unable to find any newer version then download and install it manually using pypi
+Following installs
+```
+pip3 install flatbuffers-23.3.3-py2.py3-none-any.whl
+```
+
+
+## Out of Index Error
+To troubleshoot an "out of index" error caused by the `camera` variable, ensure that the camera is properly connected. Try changing the argument passed to `cv2.VideoCapture()` to `0` if you are using the default camera, or try different integer values if you have multiple cameras connected. Also, check that the `camera.read()` method is returning a valid frame before attempting to access it. You can also add print statements to check the values of `ret` and `frame` before using them. 
+
 
 
 
