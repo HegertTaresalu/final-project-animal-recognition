@@ -97,7 +97,7 @@ def main(show_frames=True, interval = 3.0):
         max_contour = max(contours, key=cv2.contourArea)
         x,y,w,h = cv2.boundingRect(max_contour)
         print("movement detected")
-        frame = identify_Animal(frame, x, y, w, h, picture_interval)
+        frame = identify_Animal(frame, x, y, w, h)
         cv2.rectangle(frame,(x,y),(x+w,y+h),(0,255,0),3)
         x2 = x + int(w/2)
         y2 = y + int(h/2)
