@@ -16,6 +16,7 @@ args = parser.parse_args()
 
 # Load the model
 model = keras.models.load_model("96%90%")
+min_contour_area = 1000
 
 # Convert the model to a quantization-aware model
 converter = tf.lite.TFLiteConverter.from_keras_model(model)
@@ -91,9 +92,12 @@ def main(show_frames=True, interval = 3.0):
 
         # Get the contours and their areas
         contours, hierarchy = cv2.findContours(gray,cv2.RETR_EXTERNAL,cv2.CHAIN_APPROX_SIMPLE)
+    # Filter out small contours
+        contours = [cnt for cnt in contours if cv2.contourArea(cnt) > min_contour_area]
         if not contours:
             print("no movement detected")
             continue
+
         max_contour = max(contours, key=cv2.contourArea)
         x,y,w,h = cv2.boundingRect(max_contour)
         print("movement detected")
