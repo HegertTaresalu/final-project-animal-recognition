@@ -15,8 +15,8 @@ help="Integrer for how often can take images(seconds)", type = int, default = 3)
 args = parser.parse_args()
 
 # Load the model
-model = keras.models.load_model("96%90%")
-min_contour_area = 1000
+MODEL = keras.models.load_model("96%90%")
+MIN_CONTOUR_AREA = 1000
 
 # Convert the model to a quantization-aware model
 converter = tf.lite.TFLiteConverter.from_keras_model(model)
@@ -31,10 +31,10 @@ output_details = interpreter.get_output_details()
 
 picture_interval = args.interval
 last_picture_time = 0
-image_size = (180, 180)
-class_names = np.array(["deer", "fox", "rabbit", "wild_boar"])
+IMAGE_SIZE = (180, 180)
+CLASS_NAMES = np.array(["deer", "fox", "rabbit", "wild_boar"])
 
-for class_name in class_names:
+for class_name in CLASS_NAMES:
     os.makedirs(class_name, exist_ok=True)
 
 def save_image_with_timestamp(frame, class_name):
@@ -50,7 +50,7 @@ def save_image_with_timestamp(frame, class_name):
 def identify_Animal(frame, x, y, w, h):
     """Identify animal in cropped image"""
     cropped_img = frame[y:y+h, x:x+w]
-    cropped_img = cv2.resize(cropped_img,image_size)
+    cropped_img = cv2.resize(cropped_img,IMAGE_SIZE)
     # resize the cropped image to the desired size
     img_array = np.expand_dims(cropped_img, axis=0)
     img_array = img_array / 255.0
@@ -60,7 +60,7 @@ def identify_Animal(frame, x, y, w, h):
     predictions = interpreter.get_tensor(output_details[0]["index"])
     # get the predicted class name and probability
     class_index = np.argmax(predictions[0])
-    class_name = class_names[class_index]
+    class_name = CLASS_NAMES[class_index]
     probability = np.round(predictions[0][class_index].astype(float) * 100, 2)
     # write the predicted class name and probability on the contour box
     text = class_name + ": " + str(probability) + "%"
@@ -78,7 +78,6 @@ def main(show_frames=True, interval = 3.0):
     fgbg = cv2.createBackgroundSubtractorMOG2()
     while True:
         ret, frame = camera.read()
-
         if not ret:
             print("Failed to read frame")
             break
@@ -91,11 +90,13 @@ def main(show_frames=True, interval = 3.0):
         gray = cv2.medianBlur(gray,5)
 
         # Get the contours and their areas
-        contours, hierarchy = cv2.findContours(gray,cv2.RETR_EXTERNAL,cv2.CHAIN_APPROX_SIMPLE)
-    # Filter out small contours
-        contours = [cnt for cnt in contours if cv2.contourArea(cnt) > min_contour_area]
+        contours, _ = cv2.findContours(gray,cv2.RETR_EXTERNAL,cv2.CHAIN_APPROX_SIMPLE)
+        # Filter out small contours
+        contours = [cnt for cnt in contours if cv2.contourArea(cnt) > MIN_CONTOUR_AREA]
         if not contours:
             print("no movement detected")
+            if show_frames:
+                cv2.imshow("Frame",frame)
             continue
 
         max_contour = max(contours, key=cv2.contourArea)
