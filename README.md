@@ -90,3 +90,9 @@ When application timeout's(probably due to low system memory) there is chance to
 * Arch linux
 * Raspberry PI OS
 
+
+# To Do
+* [ ] Integrate every provided motion detection algorithm into one file
+* [ ] More optional args for launching(including option to choose algorithm
+* [ ] Add option for more optional parameters for finetuning
+* [ ] Implement multithreading
