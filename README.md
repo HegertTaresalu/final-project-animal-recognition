@@ -47,7 +47,7 @@ The default parameters might works for some but its highly recommended that you 
   The model classifies detected animals into 4 seperate classes. <br>
   The animals are following: Deer, Rabbit, Boar, Fox.<br>
   The model dataset has been gathered from many sources e.g images.cv, Florida Wildlife Camera Trap Dataset and Lily science datasets.<br>
-  It containts about 14450 seperate images divided into 4 groups and one class contains circa 3500 images. During training the split that was used was 80/20
+  It containts about 14450 seperate images divided into 4 groups and per class contains circa 3500 images. During development 80/20 split was used
 
 
 
