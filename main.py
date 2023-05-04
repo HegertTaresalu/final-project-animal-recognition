@@ -2,10 +2,10 @@ import cv2
 import numpy as np
 import time
 import tensorflow as tf
-import tflite_runtime.interpreter as tflite
 import tensorflow.keras as keras
 import os
 import argparse
+
 # Add args 
 parser = argparse.ArgumentParser(description="Process some integers.")
 parser.add_argument("--hide-frames", dest="show_frames", action="store_false",
@@ -19,17 +19,17 @@ MODEL = keras.models.load_model("96%90%")
 MIN_CONTOUR_AREA = 1000
 
 # Convert the model to a quantization-aware model
-converter = tf.lite.TFLiteConverter.from_keras_model(model)
-converter.optimizations = [tf.lite.Optimize.DEFAULT]
-quantized_model = converter.convert()
+CONVERTER = tf.lite.TFLiteConverter.from_keras_model(MODEL)
+CONVERTER.optimizations = [tf.lite.Optimize.DEFAULT]
+QUANTIZED_MODEL  = CONVERTER.convert()
 
 # Load the quantized model
-interpreter = tf.lite.Interpreter(model_content=quantized_model)
-interpreter.allocate_tensors()
-input_details = interpreter.get_input_details()
-output_details = interpreter.get_output_details()
+INTEPRETER = tf.lite.Interpreter(model_content=QUANTIZED_MODEL)
+INTEPRETER.allocate_tensors()
+INPUT_DETAILS = INTEPRETER.get_input_details()
+OUTPUST_DETAILS = INTEPRETER.get_output_details()
 
-picture_interval = args.interval
+PICTURE_INTERVAL = args.interval
 last_picture_time = 0
 IMAGE_SIZE = (180, 180)
 CLASS_NAMES = np.array(["deer", "fox", "rabbit", "wild_boar"])
@@ -55,9 +55,9 @@ def identify_Animal(frame, x, y, w, h):
     img_array = np.expand_dims(cropped_img, axis=0)
     img_array = img_array / 255.0
     img_array = img_array.astype("float32")
-    interpreter.set_tensor(input_details[0]["index"], img_array)
-    interpreter.invoke()
-    predictions = interpreter.get_tensor(output_details[0]["index"])
+    INTEPRETER.set_tensor(INPUT_DETAILS[0]["index"], img_array)
+    INTEPRETER.invoke()
+    predictions = INTEPRETER.get_tensor(OUTPUST_DETAILS[0]["index"])
     # get the predicted class name and probability
     class_index = np.argmax(predictions[0])
     class_name = CLASS_NAMES[class_index]
@@ -82,21 +82,19 @@ def main(show_frames=True, interval = 3.0):
             print("Failed to read frame")
             break
         fgmask = fgbg.apply(frame)
-        kernel = np.ones((20,20),np.uint8)
-        gray = fgmask
-        # Close gaps using closing
-        gray = cv2.morphologyEx(gray,cv2.MORPH_CLOSE,kernel)
-        # Remove salt and pepper noise with a median filter
-        gray = cv2.medianBlur(gray,5)
+        kernel = np.ones((5,5),np.uint8)
+        fgmask = cv2.morphologyEx(fgmask,cv2.MORPH_OPEN,kernel)
+
 
         # Get the contours and their areas
-        contours, _ = cv2.findContours(gray,cv2.RETR_EXTERNAL,cv2.CHAIN_APPROX_SIMPLE)
+        contours, hierarchy = cv2.findContours(fgmask,cv2.RETR_EXTERNAL,cv2.CHAIN_APPROX_SIMPLE)
         # Filter out small contours
         contours = [cnt for cnt in contours if cv2.contourArea(cnt) > MIN_CONTOUR_AREA]
         if not contours:
             print("no movement detected")
             if show_frames:
                 cv2.imshow("Frame",frame)
+                cv2.imshow("fgmask",fgmask)
             continue
 
         max_contour = max(contours, key=cv2.contourArea)
@@ -112,7 +110,7 @@ def main(show_frames=True, interval = 3.0):
 
         if show_frames:
             cv2.imshow("Frame",frame)
-
+            cv2.imshow("fgmask",fgmask)
         if time.time() - last_picture_time > picture_interval:
             save_image_with_timestamp(frame, class_name)
             last_picture_time = time.time()
