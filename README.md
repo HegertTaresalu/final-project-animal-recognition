@@ -16,7 +16,7 @@ The project's goal is to detect motion and try to identify what animal tripped t
    The project works on System that support OpenCV and Tensorflow 2.12
 
 
-## Mac, Linux distros(except Raspberry pi based), Windows 10 & 11:
+## Mac, Linux distros(except Raspberry pi), Windows 10 & 11:
     1. Follow the python install guide: https://www.python.org/
     2. pip install tensorflow==2.11.*
     3. pip install opencv-python
@@ -42,7 +42,12 @@ The project has multiple files with different algorithms.
 (Almost) Every algorithm has parameters that can be tuned to user's specific needs. 
 The default parameters might works for some but its highly recommended that you try out different settings.
 
-
+  ## Model Description
+  
+  The model classifies detected animals into 4 seperate classes. <br>
+  The animals are following: Deer, Rabbit, Boar, Fox.<br>
+  The model dataset has been gathered from many sources e.g images.cv, Florida Wildlife Camera Trap Dataset and Lily science datasets.<br>
+  It containts about 14450 seperate images divided into 4 groups and per class contains circa 3500 images. During development 80/20 split was used
 
 
 
@@ -64,9 +69,9 @@ You can execute the program by following terminal command
 ``` 
 error endvector missing 1 required positional
 ``` 
-Error is caused by Tensorflow and Flatbuffers mismatch 
-Try to update the packages by pip, if its unable to find any newer version then download and install it manually using pypi
-Following installs
+Error is caused by Tensorflow and Flatbuffers mismatch.
+Try to update the packages by pip, if its unable to find any newer version then download and install it manually from pypi. <br>
+Following installs flatbuffers using .whl provided by pypi
 ```
 pip3 install flatbuffers-23.3.3-py2.py3-none-any.whl
 ```
