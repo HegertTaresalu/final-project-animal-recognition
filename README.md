@@ -16,7 +16,7 @@ The project's goal is to detect motion and try to identify what animal tripped t
    The project works on System that support OpenCV and Tensorflow 2.12
 
 
-## Mac, Linux distros(except Raspberry pi based), Windows 10 & 11:
+## Mac, Linux distros(except Raspberry pi), Windows 10 & 11:
     1. Follow the python install guide: https://www.python.org/
     2. pip install tensorflow==2.11.*
     3. pip install opencv-python
