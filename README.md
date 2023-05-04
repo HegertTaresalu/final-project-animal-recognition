@@ -81,6 +81,8 @@ pip3 install flatbuffers-23.3.3-py2.py3-none-any.whl
 To troubleshoot an "out of index" error caused by the `camera` variable, ensure that the camera is properly connected. Try changing the argument passed to `cv2.VideoCapture()` to `0` if you are using the default camera, or try different integer values if you have multiple cameras connected. Also, check that the `camera.read()` method is returning a valid frame before attempting to access it. You can also add print statements to check the values of `ret` and `frame` before using them. 
 
 
+## Failed to read frame 
+When application timeout's(probably due to low system memory) there is chance to cause failed to read frame. The error only has only occured on usb webcam. The solution is to unplug webcam and insert it again.
 
 
 # List of operating systems the project has been tested on
