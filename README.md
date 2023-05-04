@@ -42,7 +42,12 @@ The project has multiple files with different algorithms.
 (Almost) Every algorithm has parameters that can be tuned to user's specific needs. 
 The default parameters might works for some but its highly recommended that you try out different settings.
 
-
+  ## Model Description
+  
+  The model classifies detected animals into 4 seperate classes. <br>
+  The animals are following: Deer, Rabbit, Boar, Fox.<br>
+  The model dataset has been gathered from many sources e.g images.cv, Florida Wildlife Camera Trap Dataset and Lily science datasets.<br>
+  It containts about 14450 seperate images divided into 4 groups and one class contains circa 3500 images. During training the split that was used was 80/20
 
 
 
@@ -64,9 +69,9 @@ You can execute the program by following terminal command
 ``` 
 error endvector missing 1 required positional
 ``` 
-Error is caused by Tensorflow and Flatbuffers mismatch 
-Try to update the packages by pip, if its unable to find any newer version then download and install it manually using pypi
-Following installs
+Error is caused by Tensorflow and Flatbuffers mismatch.
+Try to update the packages by pip, if its unable to find any newer version then download and install it manually from pypi. <br>
+Following installs flatbuffers using .whl provided by pypi
 ```
 pip3 install flatbuffers-23.3.3-py2.py3-none-any.whl
 ```
