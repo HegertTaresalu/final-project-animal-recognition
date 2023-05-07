@@ -2,6 +2,7 @@ import cv2
 import numpy as np
 import time
 import tensorflow as tf
+#Ignore false warning, it doesnt find import without tensorflow.keras on raspberry pi systems
 import tensorflow.keras as keras
 import os
 import argparse
@@ -15,24 +16,36 @@ help="Integrer for how often can take images(seconds)", type = int, default = 3)
 args = parser.parse_args()
 
 # Load the model
-MODEL = keras.models.load_model("96%90%")
 MIN_CONTOUR_AREA = 1000
 
-# Convert the model to a quantization-aware model
-CONVERTER = tf.lite.TFLiteConverter.from_keras_model(MODEL)
-CONVERTER.optimizations = [tf.lite.Optimize.DEFAULT]
-QUANTIZED_MODEL  = CONVERTER.convert()
 
-# Load the quantized model
-INTEPRETER = tf.lite.Interpreter(model_content=QUANTIZED_MODEL)
-INTEPRETER.allocate_tensors()
-INPUT_DETAILS = INTEPRETER.get_input_details()
-OUTPUST_DETAILS = INTEPRETER.get_output_details()
-
+MODEL_PATH ="96%90%"
 PICTURE_INTERVAL = args.interval
 last_picture_time = 0
 IMAGE_SIZE = (180, 180)
 CLASS_NAMES = np.array(["deer", "fox", "rabbit", "wild_boar"])
+
+
+def load_quantized_model(QUANTIZED_MODEL):
+    """Load quantized model"""
+    INTEPRETER = tf.lite.Interpreter(model_content=QUANTIZED_MODEL)
+    INTEPRETER.allocate_tensors()
+    INPUT_DETAILS = INTEPRETER.get_input_details()
+    OUTPUST_DETAILS = INTEPRETER.get_output_details()
+    return INTEPRETER, INPUT_DETAILS, OUTPUST_DETAILS
+
+
+def convert_model_to_quantized(MODEL):
+    """ Convert the model to a quantization-aware model"""
+    CONVERTER = tf.lite.TFLiteConverter.from_keras_model(MODEL)
+    CONVERTER.optimizations = [tf.lite.Optimize.DEFAULT]
+    QUANTIZED_MODEL  = CONVERTER.convert()
+    return QUANTIZED_MODEL
+
+
+def load_model(model_path):
+    return keras.models.load_model(model_path)
+
 
 for class_name in CLASS_NAMES:
     os.makedirs(class_name, exist_ok=True)
@@ -47,7 +60,7 @@ def save_image_with_timestamp(frame, class_name):
     cv2.imwrite(file_name, frame)
 
 
-def identify_Animal(frame, x, y, w, h):
+def identify_animal(frame, x, y, w, h,INTEPRETER,INPUT_DETAILS,OUTPUST_DETAILS):
     """Identify animal in cropped image"""
     cropped_img = frame[y:y+h, x:x+w]
     cropped_img = cv2.resize(cropped_img,IMAGE_SIZE)
@@ -68,52 +81,61 @@ def identify_Animal(frame, x, y, w, h):
     return frame
     
 
-def main(show_frames=True, interval = 3.0):
-    """Main function that initiates camera and applies image augmentation to frames"""
-    global last_picture_time
-    picture_interval = interval
-    last_picture_time = time.time()
-    camera = cv2.VideoCapture(1)
-    time.sleep(0.1)
-    fgbg = cv2.createBackgroundSubtractorMOG2()
-    while True:
-        ret, frame = camera.read()
-        if not ret:
-            print("Failed to read frame")
-            break
-        fgmask = fgbg.apply(frame)
-        kernel = np.ones((5,5),np.uint8)
-        fgmask = cv2.morphologyEx(fgmask,cv2.MORPH_OPEN,kernel)
+def augment_frame(frame,fgbg):
+    frame = cv2.medianBlur(frame,5)
+    fgmask = fgbg.apply(frame)
+    kernel = np.ones((3,3),np.uint8)
+    fgmask = cv2.morphologyEx(fgmask,cv2.MORPH_OPEN,kernel)
+    fgmask = cv2.morphologyEx(fgmask,cv2.MORPH_CLOSE,kernel)
+    return fgmask
 
 
-        # Get the contours and their areas
-        contours, hierarchy = cv2.findContours(fgmask,cv2.RETR_EXTERNAL,cv2.CHAIN_APPROX_SIMPLE)
-        # Filter out small contours
-        contours = [cnt for cnt in contours if cv2.contourArea(cnt) > MIN_CONTOUR_AREA]
-        if not contours:
-            print("no movement detected")
-            if show_frames:
-                cv2.imshow("Frame",frame)
-                cv2.imshow("fgmask",fgmask)
-            continue
-
-        max_contour = max(contours, key=cv2.contourArea)
-        x,y,w,h = cv2.boundingRect(max_contour)
+def detect_movement(areas,contours,frame,INTEPRETER,INPUT_DETAILS,OUTPUT_DETAILS):
+    if len(areas) < 1:
+        print("no movement detected")
+        return frame
+    else:
+        max_index = np.argmax(areas)
+        cnt = contours[max_index]
+        x,y,w,h = cv2.boundingRect(cnt)
         print("movement detected")
-        frame = identify_Animal(frame, x, y, w, h)
+        frame = identify_animal(frame, x, y, w, h,INTEPRETER, INPUT_DETAILS, OUTPUT_DETAILS)
         cv2.rectangle(frame,(x,y),(x+w,y+h),(0,255,0),3)
         x2 = x + int(w/2)
         y2 = y + int(h/2)
         cv2.circle(frame,(x2,y2),4,(0,255,0),-1)
         text = "x: " + str(x2) + ", y: " + str(y2)
         cv2.putText(frame, text, (x2 - 10, y2 - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)
+        return frame
 
+def main(show_frames=True, interval = 3.0):
+    """Main function that initiates camera and applies image augmentation to frames"""
+    global last_picture_time
+    PICTURE_INTERVAL = interval
+    last_picture_time = time.time()
+    camera = cv2.VideoCapture(0)
+    time.sleep(0.1)
+    INTEPRETER, INPUT_DETAILS, OUTPUT_DETAILS = load_quantized_model(convert_model_to_quantized(load_model(MODEL_PATH)))
+    fgbg = cv2.createBackgroundSubtractorMOG2(history=350, varThreshold=25, detectShadows=False)    
+    while True:
+        ret, frame = camera.read()
+        if not ret:
+            print("Failed to read frame")
+            break
+        fgmask = augment_frame(frame,fgbg)
+        # Get the contours and their areas
+        contours, hierarchy = cv2.findContours(fgmask,cv2.RETR_EXTERNAL,cv2.CHAIN_APPROX_SIMPLE)[-2:]
+        # Filter out small contours
+        areas = [cv2.contourArea(c) for c in contours]
+        frame = detect_movement(areas,contours,frame,INTEPRETER,INPUT_DETAILS,OUTPUT_DETAILS)
         if show_frames:
             cv2.imshow("Frame",frame)
             cv2.imshow("fgmask",fgmask)
-        if time.time() - last_picture_time > picture_interval:
+
+        if time.time() - last_picture_time > PICTURE_INTERVAL:
             save_image_with_timestamp(frame, class_name)
             last_picture_time = time.time()
+
         if cv2.waitKey(1) == ord("q"):
             break
     camera.release()
