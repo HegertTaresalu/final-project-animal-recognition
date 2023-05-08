@@ -96,5 +96,5 @@ When application timeout's(probably due to low system memory) there is chance to
 * [ ] More optional args for launching(including option to choose algorithm
 * [ ] Add option for more optional parameters for finetuning
 * [ ] Implement multithreading
-* [ ] Add option to use other classification algorithms
+* [ ] Add option to use other classification models
 
