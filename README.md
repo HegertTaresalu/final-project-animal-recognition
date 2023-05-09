@@ -97,4 +97,5 @@ When application timeout's(probably due to low system memory) there is chance to
 * [ ] Add option for more optional parameters for finetuning
 * [ ] Implement multithreading
 * [ ] Add option to use other classification models
+* [ ] Optimize performance by not drawing over detected motion when using --hide-frames argument
 
