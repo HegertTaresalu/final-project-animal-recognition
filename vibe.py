@@ -109,8 +109,6 @@ def detect_movement(areas,contours,frame,INTEPRETER,INPUT_DETAILS,OUTPUT_DETAILS
         print("no movement detected")
         return frame
     else:
-        max_index = np.argmax(areas)
-
         max_contour = max(areas, key=cv2.contourArea)
         x,y,w,h = cv2.boundingRect(max_contour)
         print("movement detected")
