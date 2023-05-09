@@ -7,8 +7,10 @@ import tensorflow.keras as keras
 import os
 import argparse
 
+# Add args 
+parser = argparse.ArgumentParser(prog="Motion detection and image classification",
+                                description="Program detects motion and tries to classify what animal tripped the sensor")
 
-parser = argparse.ArgumentParser(description="Process some integers.")
 parser.add_argument("--hide-frames", dest="show_frames", action="store_false",
                         help="Option to not show frames")
 parser.add_argument("--interval", dest="interval",action="store", 
@@ -86,17 +88,14 @@ def augment_frame(frame):
     gray = cv2.medianBlur(gray,5)
     return gray
 
-def detect_movement(areas,contours,frame,INTEPRETER,INPUT_DETAILS,OUTPUT_DETAILS):
+def detect_movement(areas,frame,INTEPRETER,INPUT_DETAILS,OUTPUT_DETAILS):
     if len(areas) < 1:
         print("no movement detected")
         cv2.imshow('Frame',frame)
         return frame
     else:
-        # Find the largest moving object in the image
-        max_index = np.argmax(areas)
-        # Draw the bounding box
-        cnt = contours[max_index]
-        x,y,w,h = cv2.boundingRect(cnt)
+        max_contour = max(areas, key=cv2.contourArea)
+        x,y,w,h = cv2.boundingRect(max_contour)
         frame = identify_animal(frame, x, y, w, h,INTEPRETER, INPUT_DETAILS, OUTPUT_DETAILS)
         cv2.rectangle(frame,(x,y),(x+w,y+h),(0,255,0),3)
         # Draw circle in the center of the bounding box
@@ -108,14 +107,12 @@ def detect_movement(areas,contours,frame,INTEPRETER,INPUT_DETAILS,OUTPUT_DETAILS
         text = "x: " + str(x2) + ", y: " + str(y2)
         cv2.putText(frame, text, (x2 - 10, y2 - 10),
         cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)
-        # Display the resulting frame
-        cv2.imshow("Frame",frame)
         print("movement detected")
         return frame
           
 
 def main(show_frames=True, interval = 3.0):
-    picture_interval = interval
+    PICUTRE_INTERVAL = interval
     last_picture_time = time.time()
     camera = cv2.VideoCapture(0)
     time.sleep(0.1)
@@ -127,8 +124,6 @@ def main(show_frames=True, interval = 3.0):
             print("Failed to read frame")
             break
         gray = augment_frame(frame)
-
-
         if FIRST_FRAME is None:
             FIRST_FRAME = gray
             continue
@@ -136,13 +131,12 @@ def main(show_frames=True, interval = 3.0):
         absolute_difference = cv2.absdiff(FIRST_FRAME,gray)
         _, absolute_difference = cv2.threshold(absolute_difference, 50, 255, cv2.THRESH_BINARY)
         contours, hierarchy = cv2.findContours(absolute_difference,cv2.RETR_TREE,cv2.CHAIN_APPROX_SIMPLE)[-2:]
-        areas = [cv2.contourArea(c) for c in contours]
-        frame = detect_movement(areas,contours,frame,INTEPRETER,INPUT_DETAILS,OUTPUT_DETAILS)
-
+        areas = [c for c in contours if cv2.contourArea(c) > MIN_CONTOUR_AREA]        
+        frame = detect_movement(areas,frame,INTEPRETER,INPUT_DETAILS,OUTPUT_DETAILS)
         if show_frames:
             cv2.imshow("Frame",frame)
             cv2.imshow("fgmask",absolute_difference)
-        if time.time() - last_picture_time > picture_interval:
+        if time.time() - last_picture_time > PICUTRE_INTERVAL:
             save_image_with_timestamp(frame, class_name)
             last_picture_time = time.time()
         if cv2.waitKey(1) == ord("q"):
