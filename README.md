@@ -1,4 +1,4 @@
-# final-project-ML
+# final-project-animal-classification
 
 # What is the goal of the project?
 The project's goal is to detect motion and try to identify what animal tripped the sensor.
@@ -96,3 +96,5 @@ When application timeout's(probably due to low system memory) there is chance to
 * [ ] More optional args for launching(including option to choose algorithm
 * [ ] Add option for more optional parameters for finetuning
 * [ ] Implement multithreading
+* [ ] Add option to use other classification models
+
