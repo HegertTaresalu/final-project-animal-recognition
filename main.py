@@ -8,7 +8,9 @@ import os
 import argparse
 
 # Add args 
-parser = argparse.ArgumentParser(description="Process some integers.")
+parser = argparse.ArgumentParser(prog="Motion detection and image classification",
+                                description="Program detects motion and tries to classify what animal tripped the sensor")
+
 parser.add_argument("--hide-frames", dest="show_frames", action="store_false",
                         help="Option to not show frames")
 parser.add_argument("--interval", dest="interval",action="store", 
@@ -16,12 +18,8 @@ help="Integrer for how often can take images(seconds)", type = int, default = 3)
 args = parser.parse_args()
 
 # Load the model
-MIN_CONTOUR_AREA = 1000
-
-
+MIN_CONTOUR_AREA = 2000
 MODEL_PATH ="96%90%"
-PICTURE_INTERVAL = args.interval
-last_picture_time = 0
 IMAGE_SIZE = (180, 180)
 CLASS_NAMES = np.array(["deer", "fox", "rabbit", "wild_boar"])
 
@@ -90,14 +88,13 @@ def augment_frame(frame,fgbg):
     return fgmask
 
 
-def detect_movement(areas,contours,frame,INTEPRETER,INPUT_DETAILS,OUTPUT_DETAILS):
+def detect_movement(areas,frame,INTEPRETER,INPUT_DETAILS,OUTPUT_DETAILS):
     if len(areas) < 1:
         print("no movement detected")
         return frame
     else:
-        max_index = np.argmax(areas)
-        cnt = contours[max_index]
-        x,y,w,h = cv2.boundingRect(cnt)
+        max_contour = max(areas, key=cv2.contourArea)
+        x,y,w,h = cv2.boundingRect(max_contour)
         print("movement detected")
         frame = identify_animal(frame, x, y, w, h,INTEPRETER, INPUT_DETAILS, OUTPUT_DETAILS)
         cv2.rectangle(frame,(x,y),(x+w,y+h),(0,255,0),3)
@@ -110,7 +107,6 @@ def detect_movement(areas,contours,frame,INTEPRETER,INPUT_DETAILS,OUTPUT_DETAILS
 
 def main(show_frames=True, interval = 3.0):
     """Main function that initiates camera and applies image augmentation to frames"""
-    global last_picture_time
     PICTURE_INTERVAL = interval
     last_picture_time = time.time()
     camera = cv2.VideoCapture(0)
@@ -126,8 +122,8 @@ def main(show_frames=True, interval = 3.0):
         # Get the contours and their areas
         contours, hierarchy = cv2.findContours(fgmask,cv2.RETR_EXTERNAL,cv2.CHAIN_APPROX_SIMPLE)[-2:]
         # Filter out small contours
-        areas = [cv2.contourArea(c) for c in contours]
-        frame = detect_movement(areas,contours,frame,INTEPRETER,INPUT_DETAILS,OUTPUT_DETAILS)
+        areas = [c for c in contours if cv2.contourArea(c) > MIN_CONTOUR_AREA]        
+        frame = detect_movement(areas,frame,INTEPRETER,INPUT_DETAILS,OUTPUT_DETAILS)
         if show_frames:
             cv2.imshow("Frame",frame)
             cv2.imshow("fgmask",fgmask)
