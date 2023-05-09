@@ -1,4 +1,4 @@
-# final-project-ML
+# final-project-animal-recognition
 
 # What is the goal of the project?
 The project's goal is to detect motion and try to identify what animal tripped the sensor.
