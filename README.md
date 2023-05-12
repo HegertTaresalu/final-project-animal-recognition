@@ -1,4 +1,8 @@
+<<<<<<< HEAD
 # final-project-animal-classification
+=======
+# final-project-animal-recognition
+>>>>>>> Background-Subtraction
 
 # What is the goal of the project?
 The project's goal is to detect motion and try to identify what animal tripped the sensor.
@@ -98,6 +102,7 @@ When application timeout's(probably due to low system memory) there is chance to
 * [ ] Implement multithreading
 * [ ] Add option to use other classification models
 * [ ] Optimize performance by not drawing over detected motion when using --hide-frames argument
+
 
 
 
