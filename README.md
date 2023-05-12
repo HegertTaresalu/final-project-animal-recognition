@@ -1,8 +1,5 @@
-<<<<<<< HEAD
 # final-project-animal-classification
-=======
-# final-project-animal-recognition
->>>>>>> Background-Subtraction
+
 
 # What is the goal of the project?
 The project's goal is to detect motion and try to identify what animal tripped the sensor.
